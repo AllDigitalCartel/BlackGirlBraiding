@@ -1,0 +1,14 @@
+{
+  "name": "Black Girls De Braiding",
+  "short_name": "BGDB",
+  "description": "Braiding salon in Annandale, Virginia — knotless braids, box braids, twists, cornrows and locs.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#12100E",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

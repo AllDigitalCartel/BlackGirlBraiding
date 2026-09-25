@@ -1,0 +1,33 @@
+{
+  "name": "black-girls-de-braiding",
+  "version": "1.0.0",
+  "description": "Black Girls De Braiding \u2014 braiding salon website (Annandale, VA)",
+  "main": "index.js",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/post-build.mjs && node scripts/audit-headings.mjs",
+    "preview": "astro preview",
+    "deploy": "firebase deploy --only hosting",
+    "audit": "node scripts/audit-headings.mjs",
+    "ship": "node scripts/ship.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gotmygat/braidingwebsite.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/gotmygat/braidingwebsite/issues"
+  },
+  "homepage": "https://github.com/gotmygat/braidingwebsite#readme",
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.2.4",
+    "firebase": "^12.17.1",
+    "sharp": "^0.35.3"
+  },
+  "private": true
+}

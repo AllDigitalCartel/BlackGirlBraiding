@@ -1,0 +1,46 @@
+rules_version = '2';
+
+/* ---------------------------------------------------------------------------
+ * Booking requests are WRITE-ONLY from the public site.
+ *
+ * Anyone may create a booking request; nobody may read, update or delete one
+ * from the client. The salon reads submissions in the Firebase console (or via
+ * the Admin SDK), so a scraper cannot enumerate customer names and phone
+ * numbers. Field validation is enforced here, not just in the browser, because
+ * client-side validation is advisory only.
+ * -------------------------------------------------------------------------*/
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /bookingRequests/{docId} {
+      allow read, update, delete: if false;
+
+      allow create: if
+        request.resource.data.keys().hasOnly(
+          ['name','phone','email','service','preferredDate','notes','createdAt','source']
+        )
+        && request.resource.data.keys().hasAll(['name','phone','service','createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 1
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 7
+        && request.resource.data.phone.size() <= 25
+        // `service` is a reserved word in the rules language, so it must be
+        // reached with bracket access rather than dot access.
+        && request.resource.data['service'] is string
+        && request.resource.data['service'].size() <= 120
+        && (!('email' in request.resource.data)
+            || (request.resource.data.email is string && request.resource.data.email.size() <= 150))
+        && (!('preferredDate' in request.resource.data)
+            || (request.resource.data.preferredDate is string && request.resource.data.preferredDate.size() <= 40))
+        && (!('notes' in request.resource.data)
+            || (request.resource.data.notes is string && request.resource.data.notes.size() <= 1500))
+        && request.resource.data.createdAt == request.time;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

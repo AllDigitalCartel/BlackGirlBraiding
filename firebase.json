@@ -1,0 +1,182 @@
+{
+  "hosting": {
+    "predeploy": [
+      "npm run build"
+    ],
+    "public": "dist",
+    "trailingSlash": true,
+    "cleanUrls": false,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "redirects": [
+      {
+        "source": "/about-us",
+        "destination": "/about/",
+        "type": 301
+      },
+      {
+        "source": "/about-us/",
+        "destination": "/about/",
+        "type": 301
+      },
+      {
+        "source": "/appointments",
+        "destination": "/book/",
+        "type": 301
+      },
+      {
+        "source": "/appointments/",
+        "destination": "/book/",
+        "type": 301
+      },
+      {
+        "source": "/booking",
+        "destination": "/book/",
+        "type": 301
+      },
+      {
+        "source": "/booking/",
+        "destination": "/book/",
+        "type": 301
+      },
+      {
+        "source": "/contact-us",
+        "destination": "/contact/",
+        "type": 301
+      },
+      {
+        "source": "/contact-us/",
+        "destination": "/contact/",
+        "type": 301
+      },
+      {
+        "source": "/favicon.ico",
+        "destination": "/favicon.svg",
+        "type": 301
+      },
+      {
+        "source": "/portfolio",
+        "destination": "/gallery/",
+        "type": 301
+      },
+      {
+        "source": "/portfolio/",
+        "destination": "/gallery/",
+        "type": 301
+      },
+      {
+        "source": "/price-list",
+        "destination": "/prices/",
+        "type": 301
+      },
+      {
+        "source": "/price-list/",
+        "destination": "/prices/",
+        "type": 301
+      },
+      {
+        "source": "/pricing",
+        "destination": "/prices/",
+        "type": 301
+      },
+      {
+        "source": "/pricing/",
+        "destination": "/prices/",
+        "type": 301
+      },
+      {
+        "source": "/shop",
+        "destination": "/prices/",
+        "type": 301
+      },
+      {
+        "source": "/shop/",
+        "destination": "/prices/",
+        "type": 301
+      },
+      {
+        "source": "/services/braids",
+        "destination": "/services/",
+        "type": 301
+      },
+      {
+        "source": "/services/braids/",
+        "destination": "/services/",
+        "type": 301
+      }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Strict-Transport-Security",
+            "value": "max-age=31536000; includeSubDomains; preload"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "SAMEORIGIN"
+          },
+          {
+            "key": "Permissions-Policy",
+            "value": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()"
+          },
+          {
+            "key": "Cross-Origin-Opener-Policy",
+            "value": "same-origin"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' https://www.gstatic.com https://www.googleapis.com; connect-src 'self' https://firestore.googleapis.com https://*.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; frame-src https://www.google.com; upgrade-insecure-requests"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=0, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/_astro/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(jpg|jpeg|png|gif|webp|avif|svg|ico|woff|woff2)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/@(robots.txt|sitemap-index.xml|sitemap-0.xml|llms.txt)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}
