@@ -1,0 +1,34 @@
+---
+import { formatPrice } from '../data/prices.js';
+const { group } = Astro.props;
+---
+<section class="price-group" id={group.slug} aria-labelledby={`ph-${group.slug}`}>
+  <header class="price-group__head">
+    <h3 id={`ph-${group.slug}`}>{group.name}</h3>
+    <p class="muted" style="font-size:var(--text-sm)">{group.blurb}</p>
+  </header>
+  <ul class="price-list">
+    {group.items.map((it) => it.stages ? (
+      <li class="price-row price-row--split">
+        <span class="price-row__name">{it.name}</span>
+        {it.stages.map((st) => (
+          <span class="price-stage">
+            <span class="price-stage__label">
+              {st.label}
+              <span>{st.note}</span>
+            </span>
+            <span class="price-row__price">{formatPrice(st)}</span>
+          </span>
+        ))}
+      </li>
+    ) : (
+      <li class="price-row">
+        <span class="price-row__name">
+          {it.name}
+          {it.note && <span class="price-row__note">{it.note}</span>}
+        </span>
+        <span class="price-row__price">{formatPrice(it)}</span>
+      </li>
+    ))}
+  </ul>
+</section>

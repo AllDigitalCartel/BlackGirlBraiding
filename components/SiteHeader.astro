@@ -1,0 +1,71 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.png';
+import site from '../data/site.js';
+const here = Astro.url.pathname;
+const isOn = (p) => (p === '/' ? here === '/' : here.startsWith(p));
+const nav = [
+  { href: '/services/', label: 'Services' },
+  { href: '/prices/',   label: 'Prices' },
+  { href: '/gallery/',  label: 'Gallery' },
+  { href: '/about/',    label: 'About' },
+  { href: '/blog/',     label: 'Hair Care' },
+  { href: '/contact/',  label: 'Contact' },
+];
+---
+<header class="site-header site-header--ink" id="siteHeader">
+  <div class="container site-header__inner">
+    <a class="brand" href="/" aria-label={`${site.name}, home`}>
+      {/* The logo renders 179x56 on desktop and 128x40 on a phone. A flat
+           sizes="220px" made a 2x phone fetch the 440w file, 31KB of the
+           above-fold budget for a 128px slot, competing with the webfont that
+           draws the LCP. Widths and sizes now track the real slot. */}
+      <Image src={logo} alt={site.name}
+             widths={[128, 180, 256, 360]}
+             sizes="(max-width: 640px) 128px, 180px"
+             loading="eager" fetchpriority="high" class="brand__logo" />
+      <span class="brand__sub">Annandale, Virginia</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primaryNav"
+            aria-label="Open menu" data-nav-toggle>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18" />
+      </svg>
+    </button>
+
+    <nav class="nav" id="primaryNav" aria-label="Primary">
+      <ul>
+        {nav.map((n) => (
+          <li><a href={n.href} aria-current={isOn(n.href) ? 'page' : undefined}>{n.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="header-cta">
+      <a class="btn btn--primary" href={`tel:${site.phone.primary}`}
+         data-cta="header-call">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <span class="is-long">Call</span> {site.phone.primaryDisplay}
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+  (function () {
+    var h = document.getElementById('siteHeader');
+    var b = h && h.querySelector('[data-nav-toggle]');
+    if (!b) return;
+    b.addEventListener('click', function () {
+      var open = h.getAttribute('data-open') === 'true';
+      h.setAttribute('data-open', String(!open));
+      b.setAttribute('aria-expanded', String(!open));
+      b.setAttribute('aria-label', open ? 'Open menu' : 'Close menu');
+    });
+  })();
+</script>

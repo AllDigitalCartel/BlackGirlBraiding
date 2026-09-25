@@ -1,0 +1,188 @@
+---
+/**
+ * GalleryGrid, Image SEO + LCP surface.
+ *  • Astro emits AVIF -> WebP -> JPEG with a real srcset/sizes for each photo.
+ *  • width/height are always present, so CLS from images is structurally zero.
+ *  • Every image carries written alt text; decorative alt is never used here.
+ *  • The first `eagerCount` images load eagerly; the rest are lazy and
+ *    async-decoded so they cost nothing on first paint. No fetchpriority
+ *    hint: the LCP element is the H1 text on every template, so raising an
+ *    image above the webfont in the queue slows the thing being measured.
+ */
+import { Picture, getImage } from 'astro:assets';
+import gallery from '../data/gallery.js';
+
+const {
+  items = gallery,
+  limit,
+  eagerCount = 0,
+  showCaptions = true,
+  /** Render the figures bare, for a parent that supplies its own grid. */
+  bare = false,
+  /* Measured, not guessed. .gallery-grid is
+     repeat(auto-fill, minmax(min(100%, 15rem), 1fr)), so it collapses to ONE
+     near-full-width column on a phone. Measured tile widths against the real
+     page: 335px at 375 (89vw), 316px at 700 (45vw), 265px at 900 (29vw),
+     277px at 1440 (19vw). The old value claimed 45vw on a phone for a tile
+     that is 89vw, so every photograph was fetched at half the resolution it
+     was displayed at. */
+  sizes = '(min-width: 1100px) 20vw, (min-width: 900px) 30vw, (min-width: 700px) 45vw, 90vw',
+} = Astro.props;
+
+const files = import.meta.glob('../assets/gallery/*.jpg', { eager: true, import: 'default' });
+const resolve = (slug) => files[`../assets/gallery/${slug}.jpg`];
+
+const picked = (limit ? items.slice(0, limit) : items)
+  .map((it) => ({ ...it, src: resolve(it.slug) }))
+  .filter((it) => it.src);
+
+// A full-size rendition for the lightbox. It doubles as the <a href>, so with
+// JavaScript off the photo still opens, it just opens on its own page.
+const shown = await Promise.all(
+  picked.map(async (it) => ({
+    ...it,
+    full: (await getImage({ src: it.src, format: 'webp', width: 1400, quality: 78 })).src,
+  })),
+);
+---
+<div class:list={[!bare && 'gallery-grid']} style={bare ? 'display:contents' : undefined}>
+  {shown.map((it, i) => (
+    <figure class="gallery-item">
+      <a class="gallery-open" href={it.full}
+         data-caption={it.alt} data-category={it.category}
+         aria-label={`View a larger photo: ${it.alt}`}>
+      <Picture
+        src={it.src}
+        formats={['avif', 'webp']}
+        fallbackFormat="jpg"
+        {/* 720 exists for the phone case: a 335px tile at DPR2 needs 670px,
+            which used to jump all the way to 960 and overshoot by 40%. */}
+        widths={[320, 480, 640, 720, 960]}
+        sizes={sizes}
+        alt={it.alt}
+        loading={i < eagerCount ? 'eager' : 'lazy'}
+        decoding={i < eagerCount ? 'sync' : 'async'}
+        quality={72}
+      />
+      </a>
+      {showCaptions && <figcaption>{it.category}</figcaption>}
+    </figure>
+  ))}
+</div>
+
+<script>
+  /* Lightbox. Astro bundles this to an external file, which matters because the
+     CSP is script-src 'self' and would block an inline one.
+
+     The photos are real links to the full-size image, so this is an upgrade,
+     not a requirement: with JS off, clicking still opens the photo. */
+  const links = Array.from(document.querySelectorAll('a.gallery-open'));
+
+  if (links.length) {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'lightbox';
+    dialog.innerHTML =
+      '<button class="lightbox__close" type="button" aria-label="Close photo">&#215;</button>' +
+      '<button class="lightbox__nav lightbox__nav--prev" type="button" aria-label="Previous photo">&#8249;</button>' +
+      '<figure class="lightbox__figure">' +
+        '<img class="lightbox__img" alt="" />' +
+        '<figcaption class="lightbox__caption"></figcaption>' +
+      '</figure>' +
+      '<button class="lightbox__nav lightbox__nav--next" type="button" aria-label="Next photo">&#8250;</button>';
+    document.body.appendChild(dialog);
+
+    const img = dialog.querySelector('.lightbox__img');
+    const caption = dialog.querySelector('.lightbox__caption');
+    const prev = dialog.querySelector('.lightbox__nav--prev');
+    const next = dialog.querySelector('.lightbox__nav--next');
+    let index = 0;
+
+    // Bumped on every show() so a slow full-size image that resolves after the
+    // viewer has already arrowed past it cannot overwrite the current one.
+    let token = 0;
+
+    function show(i) {
+      index = (i + links.length) % links.length;
+      const link = links[index];
+      const mine = ++token;
+
+      img.alt = link.dataset.caption || '';
+      caption.textContent = link.dataset.category
+        ? link.dataset.category + '. ' + (link.dataset.caption || '')
+        : (link.dataset.caption || '');
+
+      // The thumbnail is already decoded in the page, so show it immediately
+      // rather than opening on an empty box for as long as the full-size file
+      // takes to arrive. It is upscaled and soft for a moment, which is a much
+      // better first frame than nothing.
+      const thumb = link.querySelector('img');
+      if (thumb && thumb.currentSrc) {
+        img.src = thumb.currentSrc;
+        dialog.classList.add('is-loading');
+      }
+
+      const full = new Image();
+      full.onload = () => {
+        if (mine !== token) return;
+        img.src = full.src;
+        dialog.classList.remove('is-loading');
+      };
+      full.onerror = () => { if (mine === token) dialog.classList.remove('is-loading'); };
+      full.src = link.getAttribute('href');
+
+      const single = links.length < 2;
+      prev.hidden = single;
+      next.hidden = single;
+    }
+
+    links.forEach((link, i) => {
+      link.addEventListener('click', (event) => {
+        // Let people who mean to open the image in a new tab still do that.
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+        event.preventDefault();
+        show(i);
+        dialog.showModal();
+        lockScroll();
+      });
+    });
+
+    prev.addEventListener('click', () => show(index - 1));
+    next.addEventListener('click', () => show(index + 1));
+    dialog.querySelector('.lightbox__close').addEventListener('click', () => dialog.close());
+
+    // Clicking the backdrop closes. The dialog element is the backdrop, so a
+    // click landing on it rather than on its contents means outside.
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') { event.preventDefault(); show(index - 1); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); show(index + 1); }
+    });
+
+    // A modal <dialog> does not reliably stop the page behind it from
+    // scrolling on mobile. Measured: the page moved 361px under an open
+    // lightbox. Holding the scroll position and restoring it on close avoids
+    // the jump that plain overflow:hidden causes on iOS.
+    let savedScroll = 0;
+    function lockScroll() {
+      savedScroll = window.scrollY;
+      document.documentElement.classList.add('has-lightbox');
+      document.body.style.top = `-${savedScroll}px`;
+    }
+    function unlockScroll() {
+      document.documentElement.classList.remove('has-lightbox');
+      document.body.style.top = '';
+      window.scrollTo(0, savedScroll);
+    }
+
+    // Escape is native to <dialog>. Free the image when it closes so a long
+    // gallery does not hold a full-size decode in memory.
+    dialog.addEventListener('close', () => {
+      img.removeAttribute('src');
+      dialog.classList.remove('is-loading');
+      unlockScroll();
+    });
+  }
+</script>

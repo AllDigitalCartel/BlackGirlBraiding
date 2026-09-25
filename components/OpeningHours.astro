@@ -1,0 +1,23 @@
+---
+/**
+ * Opening hours, rendered one way everywhere.
+ *
+ * This existed as four separate ad-hoc markups: a two-column <table> on
+ * /contact, and three different inline-styled lists elsewhere. The table
+ * collapsed in a narrow card, wrapping "Tuesday – Sunday" mid-phrase and
+ * butting "Monday" straight against its value with no gap.
+ *
+ * Label sits above value so it cannot collide at any width, and the day label
+ * never breaks mid-phrase.
+ */
+import site from '../data/site.js';
+const { class: cls = '' } = Astro.props;
+---
+<ul class:list={['hours', cls]}>
+  {site.hoursDisplay.map((h) => (
+    <li>
+      <span class="hours__day">{h.label}</span>
+      <span class="hours__time">{h.value}</span>
+    </li>
+  ))}
+</ul>

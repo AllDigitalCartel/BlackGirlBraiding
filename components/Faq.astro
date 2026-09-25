@@ -1,0 +1,25 @@
+---
+/** Visible FAQ. The matching FAQPage JSON-LD is passed up via the page's `schema`. */
+const { items = [], heading = 'Frequently asked questions', id = 'faq' } = Astro.props;
+---
+{items.length > 0 && (
+  <section class="section section--surface" aria-labelledby={`${id}-h`}>
+    <div class="container container--narrow">
+      <div class="section-head">
+        <p class="eyebrow">Good to know</p>
+        <h2 id={`${id}-h`}>{heading}</h2>
+      </div>
+      <div class="faq">
+        {items.map((f) => (
+          <details>
+            {/* The question is a heading inside the summary. That is valid flow
+                content, and it lets a screen reader user jump question to
+                question instead of tabbing through every disclosure. */}
+            <summary><h3>{f.q}</h3></summary>
+            <div><p>{f.a}</p></div>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

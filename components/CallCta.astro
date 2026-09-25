@@ -1,0 +1,27 @@
+---
+/**
+ * The site's conversion block. Primary CTA is the phone call (client's stated
+ * primary CTA); secondary is the booking form. Both appear on every page.
+ */
+import site from '../data/site.js';
+const { heading = 'Ready to get your hair done?', body, tone = 'ink' } = Astro.props;
+const copy = body ??
+  `Give ${site.manager} a call. She'll tell you what's open this week, help you pick a size and length, or just give you a price. No pressure.`;
+---
+<section class={`section ${tone === 'ink' ? 'section--ink' : 'section--surface'}`} aria-labelledby="cta-h">
+  <div class="container container--narrow" style="text-align:center">
+    <p class="eyebrow">Book an appointment</p>
+    <h2 id="cta-h" style="margin-top:var(--space-3)">{heading}</h2>
+    <p class="lede" style="margin:var(--space-4) auto 0">{copy}</p>
+    <div class="btn-row" style="justify-content:center;margin-top:var(--space-6)">
+      <a class="btn btn--primary" href={`tel:${site.phone.primary}`} data-cta="block-call">
+        Call {site.phone.primaryDisplay}
+      </a>
+      <a class="btn btn--ghost" href="/book/" data-cta="block-book">Request an appointment</a>
+    </div>
+    <p class="muted" style="margin-top:var(--space-5);font-size:var(--text-sm)">
+      Second line: <a href={`tel:${site.phone.secondary}`}>{site.phone.secondaryDisplay}</a>
+      &nbsp;·&nbsp; {site.address.street}, {site.address.locality}, {site.address.region}
+    </p>
+  </div>
+</section>

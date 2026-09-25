@@ -1,0 +1,90 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.png';
+import site from '../data/site.js';
+import OpeningHours from '../components/OpeningHours.astro';
+import SocialLinks from '../components/SocialLinks.astro';
+import { services } from '../data/services.js';
+const a = site.address;
+const year = new Date().getFullYear();
+const topServices = services.slice(0, 6);
+const mapQ = encodeURIComponent(`${a.street}, ${a.locality}, ${a.region} ${a.postalCode}`);
+const mapLink = `https://www.google.com/maps/search/?api=1&query=${mapQ}`;
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <section>
+        <h2 class="visually-hidden">{site.name}</h2>
+        {/* Same slot as the header logo, .brand__logo, so the same sizing
+             applies: 179x56 on desktop and 128x40 on a phone. This one kept
+             the flat sizes="240px" after the header was fixed, which made a
+             2x phone pull the 480w file at 35KB for a 128px slot. */}
+        <Image src={logo} alt={site.name}
+               widths={[128, 180, 256, 360]}
+               sizes="(max-width: 640px) 128px, 180px"
+               loading="lazy" class="brand__logo" />
+        <p>{site.tagline}</p>
+        <p style="margin-top:var(--space-4)">
+          <a class="btn btn--primary" href={`tel:${site.phone.primary}`} data-cta="footer-call">
+            Call {site.phone.primaryDisplay}
+          </a>
+        </p>
+      </section>
+
+      <section>
+        <h3>Visit us</h3>
+        <address style="font-style:normal">
+          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              `${a.street}, ${a.locality}, ${a.region} ${a.postalCode}`)}`}
+             rel="noopener" target="_blank">
+            {a.street}<br />{a.locality}, {a.region} {a.postalCode}
+          </a>
+        </address>
+        <ul class="footer-list" style="margin-top:var(--space-4)">
+          <li><a href={`tel:${site.phone.primary}`}>{site.phone.primaryDisplay}</a></li>
+          <li><a href={`tel:${site.phone.secondary}`}>{site.phone.secondaryDisplay}</a></li>
+          <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+          <li style="margin-top:var(--space-3)">
+            <a href={mapLink} rel="noopener" target="_blank" class="footer-directions">
+              Open in Google Maps
+            </a>
+          </li>
+        </ul>
+
+        <div style="margin-top:var(--space-6)">
+          <SocialLinks heading="Follow us for new styles" />
+        </div>
+
+      </section>
+
+      <section>
+        <h3>Popular services</h3>
+        <ul class="footer-list">
+          {topServices.map((s) => <li><a href={`/services/${s.slug}/`}>{s.name}</a></li>)}
+          <li><a href="/services/">All services</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Opening hours</h3>
+        <OpeningHours />
+      </section>
+    </div>
+
+    <div class="footer-bottom">
+      <p>
+        &copy; {year} {site.name}. All rights reserved.{' '}
+        <span class="footer-credit">Smart Website Built by <a href="https://renderanalytics.net/" rel="noopener">Render Analytics</a>.</span>
+      </p>
+      <nav aria-label="Footer">
+        <ul class="footer-list" style="grid-auto-flow:column;gap:var(--space-5)">
+          <li><a href="/prices/">Prices</a></li>
+          <li><a href="/gallery/">Gallery</a></li>
+          <li><a href="/book/">Book</a></li>
+          <li><a href="/contact/">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</footer>
